@@ -16,10 +16,48 @@ provider:
   region: us-east-1
   profile: anomalyadmin
 
+  environment:
+    tableName: notes
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:Query
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:DescribeTable
+      Resource: "arn:aws:dynamodb:us-east-1:*:*"
+
 functions:
-  hello:
-    handler: handler.hello
+  create:
+    handler: create.main
     events:
       - http:
-          path: hello
-          method: get
+          path: notes
+          method: post
+
+resources:
+  Resources:
+    NotesTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        TableName: 'notes'
+        BillingMode: "PAY_PER_REQUEST"
+        AttributeDefinitions:
+          -
+            AttributeName: "userId"
+            AttributeType: "S"
+          -
+            AttributeName: "noteId"
+            AttributeType: "S"
+        KeySchema:
+          -
+            AttributeName: "userId"
+            KeyType: "HASH"
+          -
+            AttributeName: "noteId"
+            KeyType: "RANGE"
+
